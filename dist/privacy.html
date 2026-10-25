@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — SiteCheck by DNATech</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="/icons/icon48.png" />
+    <style>
+      :root {
+        --bg: #000000;
+        --card: #101013;
+        --border: rgba(255, 255, 255, 0.09);
+        --text: #EDEDED;
+        --muted: #A1A1AA;
+        --accent: #FFFFFF;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.65;
+        letter-spacing: -0.011em;
+      }
+      .container {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 36px;
+      }
+      .logo-badge {
+        width: 36px;
+        height: 36px;
+        background: #FFFFFF;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .logo-badge img {
+        width: 100%;
+        height: 100%;
+        -o-object-fit: contain;
+           object-fit: contain;
+      }
+      h1 {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--accent);
+        margin: 0;
+        letter-spacing: -0.02em;
+      }
+      .meta-subtitle {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--accent);
+        margin-top: 36px;
+        margin-bottom: 12px;
+        letter-spacing: -0.015em;
+        border-left: 3px solid #FFFFFF;
+        padding-left: 10px;
+      }
+      p, li {
+        font-size: 14px;
+        color: #D4D4D8;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      li {
+        margin-bottom: 6px;
+      }
+      .card {
+        background-color: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin: 16px 0;
+      }
+      th, td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        color: var(--accent);
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.03);
+      }
+      code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      a {
+        color: #FFFFFF;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      footer {
+        margin-top: 60px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: gap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; margin-bottom: 28px; border-bottom: 1px solid var(--border); font-size: 13px;">
+        <div style="display: flex; gap: 16px;">
+          <a href="/" style="color: var(--muted); text-decoration: none;">← Back to Home</a>
+          <a href="/dashboard.html" style="color: var(--muted); text-decoration: none;">Live Dashboard</a>
+          <a href="/terms.html" style="color: var(--muted); text-decoration: none;">Terms of Service</a>
+        </div>
+        <div>
+          <a href="https://github.com/dnatech117/check-site" target="_blank" rel="noopener noreferrer" style="color: var(--muted); text-decoration: none;">GitHub</a>
+        </div>
+      </div>
+
+      <header>
+        <div class="logo-badge">
+          <img src="/icons/logo.png" alt="SiteCheck Logo" />
+        </div>
+        <div>
+          <h1>SiteCheck — Privacy Policy</h1>
+          <div class="meta-subtitle">Product by DNATech · Effective October 25, 2026</div>
+        </div>
+      </header>
+
+      <div class="card">
+        <strong>Executive Summary:</strong> SiteCheck is a local-first developer utility. All website audits, DOM inspections, heading tree analyses, and link status checks run 100% locally on your machine. We do not operate tracking servers, we do not collect personal information, and we never sell or transmit your data to third parties.
+      </div>
+
+      <h2>1. Local Processing Guarantee</h2>
+      <p>When you click the SiteCheck extension icon, the extension temporarily reads the Document Object Model (DOM) of the webpage in your active browser tab. This process inspects:</p>
+      <ul>
+        <li><strong>Metadata</strong>: <code>&lt;title&gt;</code>, description, canonical link, viewport, and OpenGraph/Twitter cards.</li>
+        <li><strong>Headings Outline</strong>: <code>H1</code> through <code>H6</code> structure and hierarchy sequence.</li>
+        <li><strong>Images</strong>: Media URLs, dimensions, and alternative text presence.</li>
+        <li><strong>Hyperlinks</strong>: Anchor texts and destination targets.</li>
+        <li><strong>WordPress Indicators</strong>: Publicly exposed version tags, asset paths, and plugin footprints.</li>
+      </ul>
+      <p>This data is held only in transient browser memory to render the visual report. None of this information is uploaded, logged, or transferred to any external server.</p>
+
+      <h2>2. Chrome Permissions &amp; Usage</h2>
+      <p>In accordance with Chrome Web Store Minimal Permissions guidelines, SiteCheck requests only three scoped permissions:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Permission</th>
+            <th>Technical Justification</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>activeTab</code></td>
+            <td>Grants temporary access to inspect the DOM of only the current page when you click the extension icon. It never grants continuous or background browsing tracking.</td>
+          </tr>
+          <tr>
+            <td><code>scripting</code></td>
+            <td>Allows the extension to inject the client-side audit engine and the interactive neon element highlighter onto the active webpage.</td>
+          </tr>
+          <tr>
+            <td><code>storage</code></td>
+            <td>Enables saving your audit logs and custom SEO threshold preferences locally on your computer via <code>chrome.storage.local</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>3. Data Storage &amp; Retention</h2>
+      <p>Audit reports and settings are saved exclusively in your browser's private local storage (<code>chrome.storage.local</code>). This data is completely private to your computer profile. You can delete individual reports or wipe the entire history log at any time with one click in the History panel.</p>
+
+      <h2>4. Third-Party Disclosures &amp; Analytics</h2>
+      <p>SiteCheck contains zero third-party analytics trackers, zero advertising scripts, and zero telemetry beacons. We comply fully with the Google Chrome Web Store Developer Program Policies.</p>
+
+      <h2>5. Contact &amp; Source Code</h2>
+      <p>SiteCheck is an open, transparent project developed by DNATech. You can review the full source code and verify our privacy guarantees on our GitHub repository:</p>
+      <p><a href="https://github.com/dnatech117/check-site" target="_blank" rel="noopener noreferrer">https://github.com/dnatech117/check-site</a></p>
+
+      <footer>
+        <div>&copy; 2026 DNATech. All rights reserved.</div>
+        <div>SiteCheck Chrome Extension (Manifest V3)</div>
+      </footer>
+    </div>
+  </body>
+</html>

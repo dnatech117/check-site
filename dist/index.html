@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SiteCheck — Website Health & SEO Checker Chrome Extension</title>
+    <meta name="description" content="Instant website health, SEO, broken links, heading hierarchy, image alt, and WordPress CMS audit Chrome extension by DNATech. 100% local client-side processing." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="/icons/icon48.png" />
+    <style>
+      :root {
+        --bg-black: #050507;
+        --bg-card: #0E0E12;
+        --border: rgba(255, 255, 255, 0.08);
+        --border-hover: rgba(255, 255, 255, 0.2);
+        --text: #F4F4F5;
+        --muted: #A1A1AA;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-black);
+        color: var(--text);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.5;
+        letter-spacing: -0.015em;
+        overflow-x: hidden;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+      }
+      .brand-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo-icon {
+        width: 34px;
+        height: 34px;
+        background: #FFFFFF;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .logo-icon img {
+        width: 100%;
+        height: 100%;
+        -o-object-fit: contain;
+           object-fit: contain;
+      }
+      .brand-title {
+        font-weight: 800;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .version-badge {
+        font-size: 11px;
+        font-family: 'JetBrains Mono', monospace;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #D4D4D8;
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      .nav-links a:hover {
+        color: #FFFFFF;
+      }
+      .nav-cta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+        color: #EDEDED;
+        transition: all 0.15s ease;
+      }
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--border-hover);
+        color: #FFFFFF;
+      }
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        background: #FFFFFF;
+        color: #000000;
+        box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15);
+        transition: all 0.15s ease;
+      }
+      .btn-primary:hover {
+        background: #E4E4E7;
+        transform: translateY(-1px);
+      }
+      .hero-section {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 72px 24px 48px;
+        text-align: center;
+      }
+      .pill-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 12px;
+        font-weight: 500;
+        color: #D4D4D8;
+        margin-bottom: 24px;
+      }
+      .hero-title {
+        font-size: clamp(34px, 5.5vw, 56px);
+        font-weight: 900;
+        line-height: 1.12;
+        letter-spacing: -0.035em;
+        margin: 0 0 20px;
+        background: linear-gradient(180deg, #FFFFFF 0%, #A1A1AA 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero-desc {
+        max-width: 680px;
+        margin: 0 auto 36px;
+        font-size: clamp(16px, 2vw, 18px);
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .hero-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 56px;
+      }
+      .preview-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        padding-bottom: 80px;
+      }
+      .glow-layer {
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 500px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+        filter: blur(60px);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .preview-card {
+        position: relative;
+        z-index: 1;
+        width: 422px;
+        max-width: 95vw;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        background: #000000;
+        overflow: hidden;
+      }
+      .preview-header-bar {
+        background: #111114;
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .window-dots {
+        display: flex;
+        gap: 6px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .dot-red { background: #EF4444; }
+      .dot-yellow { background: #F59E0B; }
+      .dot-green { background: #10B981; }
+      .window-title {
+        font-size: 11px;
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--muted);
+      }
+      .feature-section {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 32px 24px 80px;
+      }
+      .section-header {
+        text-align: center;
+        margin-bottom: 48px;
+      }
+      .section-title {
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        margin: 0 0 12px;
+      }
+      .section-subtitle {
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+      }
+      .feature-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+        transition: all 0.2s ease;
+      }
+      .feature-card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+      }
+      .feature-icon-box {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+      .feature-name {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: #FFFFFF;
+      }
+      .feature-text {
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.55;
+        margin: 0;
+      }
+      .cta-banner {
+        max-width: 1140px;
+        margin: 0 auto 90px;
+        padding: 0 24px;
+      }
+      .cta-box {
+        background: linear-gradient(180deg, #121217 0%, #0A0A0D 100%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        padding: 48px 36px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 28px;
+        flex-wrap: wrap;
+      }
+      .cta-content h3 {
+        font-size: 24px;
+        font-weight: 800;
+        margin: 0 0 8px;
+        letter-spacing: -0.02em;
+      }
+      .cta-content p {
+        color: var(--muted);
+        margin: 0;
+        font-size: 14px;
+      }
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 36px 24px;
+        background: #020203;
+      }
+      .footer-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .footer-links {
+        display: flex;
+        gap: 20px;
+      }
+      .footer-links a:hover {
+        color: #FFFFFF;
+      }
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+        .cta-box {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-Ix96nRaG.js"></script>
+    <script type="module" crossorigin src="/assets/main-BZdP2lwl.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-d_Gf96r8.css">
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="nav-container">
+      <div class="brand-group">
+        <div class="logo-icon">
+          <img src="/icons/logo.png" alt="SiteCheck Logo" />
+        </div>
+        <div class="brand-title">
+          SiteCheck
+          <span class="version-badge">v1.0.0</span>
+        </div>
+      </div>
+
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#demo">Live Demo</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/terms.html">Terms</a>
+      </div>
+
+      <div class="nav-cta">
+        <a href="https://github.com/dnatech117/check-site" target="_blank" rel="noopener noreferrer" class="btn-outline">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+          GitHub
+        </a>
+        <a href="/dashboard.html" class="btn-primary">
+          Open Dashboard →
+        </a>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+      <div class="pill-badge">
+        <span>⚡</span> Built for Chrome Manifest V3 · 100% Local DOM Inspection
+      </div>
+      <h1 class="hero-title">
+        The Precision Website Health &amp;<br />SEO Audit Extension
+      </h1>
+      <p class="hero-desc">
+        Instant heading hierarchy validation, broken links and image audits, performance vitals, and WordPress CMS footprints. All audited entirely client-side with zero telemetry tracking.
+      </p>
+
+      <div class="hero-actions">
+        <a href="/dashboard.html" class="btn-primary">
+          Launch Full-Screen Dashboard
+        </a>
+        <a href="#demo" class="btn-outline">
+          Try Interactive Extension Demo ↓
+        </a>
+        <a href="/privacy.html" class="btn-outline">
+          Privacy Policy
+        </a>
+      </div>
+    </header>
+
+    <!-- Interactive Extension Demo -->
+    <section id="demo" class="preview-wrapper">
+      <div class="glow-layer"></div>
+      <div class="preview-card">
+        <div class="preview-header-bar">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <div class="window-title">SiteCheck Extension · Live Interactive Preview</div>
+          <div style="width: 32px;"></div>
+        </div>
+
+        <!-- React Mount Point for Extension Popup -->
+        <div id="root"></div>
+      </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section id="features" class="feature-section">
+      <div class="section-header">
+        <h2 class="section-title">Built for Modern Web Engineering</h2>
+        <p class="section-subtitle">Everything you need to audit, debug, and optimize websites before deployment.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="feature-card">
+          <div class="feature-icon-box">📊</div>
+          <h3 class="feature-name">Comprehensive Health Score</h3>
+          <p class="feature-text">
+            Weighted 0–100 health algorithm evaluating critical errors, SEO warnings, meta tags, heading structures, and asset performance in real time.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🌲</div>
+          <h3 class="feature-name">Visual Headings Outline</h3>
+          <p class="feature-text">
+            Interactive tree visualization of H1 through H6 tag hierarchy. Instantly flags missing H1 tags, duplicated headings, and skipped hierarchy levels.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🔗</div>
+          <h3 class="feature-name">Link Integrity &amp; Anchor Audit</h3>
+          <p class="feature-text">
+            Inspects all internal and external hyperlinks, validates generic anchor texts ("click here"), and flags broken or insecure URLs.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🖼️</div>
+          <h3 class="feature-name">Image &amp; Media Diagnostics</h3>
+          <p class="feature-text">
+            Detects missing alternative text attributes, unoptimized dimensions, layout shift risks, and insecure HTTP assets directly on the page.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🛡️</div>
+          <h3 class="feature-name">WordPress &amp; Tech Detection</h3>
+          <p class="feature-text">
+            Identifies exposed WordPress versions, active plugins, theme directories, and public generator tags for fast security profiling.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🔒</div>
+          <h3 class="feature-name">100% Local Privacy Guarantee</h3>
+          <p class="feature-text">
+            All audits run entirely inside your browser tab memory. We never operate tracking servers or transmit your code or data anywhere.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard CTA Banner -->
+    <section class="cta-banner">
+      <div class="cta-box">
+        <div class="cta-content">
+          <h3>Need full-screen audit reports &amp; data exports?</h3>
+          <p>Explore the full SiteCheck intelligence dashboard with CSV, JSON, and print-ready report layouts.</p>
+        </div>
+        <div>
+          <a href="/dashboard.html" class="btn-primary">
+            Open Full Dashboard Demo →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-inner">
+        <div>
+          &copy; 2026 DNATech. SiteCheck Chrome Extension (Manifest V3).
+        </div>
+        <div class="footer-links">
+          <a href="/">Home</a>
+          <a href="/dashboard.html">Dashboard</a>
+          <a href="/privacy.html">Privacy Policy</a>
+          <a href="/terms.html">Terms of Service</a>
+          <a href="https://github.com/dnatech117/check-site" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Extension Popup Script -->
+  </body>
+</html>
