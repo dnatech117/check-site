@@ -56,7 +56,15 @@ export async function saveAuditReport(report: AuditReport): Promise<void> {
   if (isExtensionEnv) {
     return new Promise((resolve) => {
       chrome.storage.local.set({ sitecheck_history: updated }, () => {
-        chrome.runtime.sendMessage({ type: 'SAVE_AUDIT_REPORT', report });
+        try {
+          chrome.runtime.sendMessage({ type: 'SAVE_AUDIT_REPORT', report }, () => {
+            if (chrome.runtime.lastError) {
+              // Background worker might be idle; ignore harmless port error
+            }
+          });
+        } catch {
+          // Extension context might be invalid
+        }
         resolve();
       });
     });

@@ -470,7 +470,9 @@ export const DashboardApp: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-xs text-white">{item.domain}</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded badge-pass">
+                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                        item.score >= 90 ? 'badge-pass' : item.score >= 70 ? 'badge-warn' : 'badge-fail'
+                      }`}>
                         Score: {item.score}/100
                       </span>
                     </div>

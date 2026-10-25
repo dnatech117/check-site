@@ -82,10 +82,12 @@ export const App: React.FC = () => {
     setError(null);
     setLoadingStep('Inspecting DOM & metadata...');
 
+    const timers: number[] = [];
+
     try {
-      setTimeout(() => setLoadingStep('Analyzing headings & document outline...'), 140);
-      setTimeout(() => setLoadingStep('Evaluating images, links & assets...'), 280);
-      setTimeout(() => setLoadingStep('Detecting CMS signatures & telemetry...'), 420);
+      timers.push(window.setTimeout(() => setLoadingStep('Analyzing headings & document outline...'), 140));
+      timers.push(window.setTimeout(() => setLoadingStep('Evaluating images, links & assets...'), 280));
+      timers.push(window.setTimeout(() => setLoadingStep('Detecting CMS signatures & telemetry...'), 420));
 
       const result = await requestAudit(currentSettings || settings || undefined);
       setReport(result);
@@ -97,6 +99,7 @@ export const App: React.FC = () => {
       console.warn('[SiteCheck] Audit error:', err);
       setError(err?.message || 'Failed to complete website audit.');
     } finally {
+      timers.forEach(t => clearTimeout(t));
       setIsLoading(false);
     }
   };

@@ -7,11 +7,11 @@ export const MOCK_AUDIT_REPORT: AuditReport = {
   timestamp: Date.now() - 1000 * 60 * 15, // 15 mins ago
   score: 74,
   summary: {
-    total: 9,
+    total: 11,
     critical: 2,
     warning: 4,
     notice: 2,
-    good: 4,
+    good: 3,
   },
   issues: [
     {

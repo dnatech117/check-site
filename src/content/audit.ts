@@ -17,8 +17,11 @@ function generateSelector(el: Element): string {
   if (el.tagName.toLowerCase() === 'html') return 'html';
   
   let selector = el.tagName.toLowerCase();
-  if (el.className && typeof el.className === 'string') {
-    const classes = el.className.trim().split(/\s+/).filter(Boolean);
+  const classStr = typeof el.className === 'string' 
+    ? el.className 
+    : (el.className && typeof (el.className as any).baseVal === 'string' ? (el.className as any).baseVal : '');
+  if (classStr) {
+    const classes = classStr.trim().split(/\s+/).filter(Boolean);
     if (classes.length > 0) {
       selector += `.${CSS.escape(classes[0])}`;
     }
@@ -259,7 +262,7 @@ export function performSiteAudit(customSettings?: Partial<AuditSettings>): Audit
 
   headingElements.forEach((el, index) => {
     const level = parseInt(el.tagName.substring(1), 10);
-    const text = el.innerText.trim();
+    const text = (el.innerText || el.textContent || '').trim();
     const selector = generateSelector(el);
     let isSkipped = false;
 
@@ -303,7 +306,7 @@ export function performSiteAudit(customSettings?: Partial<AuditSettings>): Audit
       scoreImpact: 5
     });
   } else {
-    const h1Text = h1List[0].innerText.trim();
+    const h1Text = (h1List[0].innerText || h1List[0].textContent || '').trim();
     if (!h1Text) {
       issues.push({
         id: 'empty-h1',
@@ -597,9 +600,15 @@ export function performSiteAudit(customSettings?: Partial<AuditSettings>): Audit
 
   // 7. Performance & DOM Metrics
   const navTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-  const loadTimeMs = navTiming ? Math.round(navTiming.loadEventEnd - navTiming.startTime) : 0;
-  const domContentLoadedMs = navTiming ? Math.round(navTiming.domContentLoadedEventEnd - navTiming.startTime) : 0;
-  const ttfbMs = navTiming ? Math.round(navTiming.responseStart - navTiming.requestStart) : 0;
+  const loadTimeMs = navTiming && navTiming.loadEventEnd > 0 
+    ? Math.max(0, Math.round(navTiming.loadEventEnd - navTiming.startTime)) 
+    : 0;
+  const domContentLoadedMs = navTiming && navTiming.domContentLoadedEventEnd > 0 
+    ? Math.max(0, Math.round(navTiming.domContentLoadedEventEnd - navTiming.startTime)) 
+    : 0;
+  const ttfbMs = navTiming && navTiming.responseStart > 0 
+    ? Math.max(0, Math.round(navTiming.responseStart - navTiming.requestStart)) 
+    : 0;
   const domNodesCount = document.getElementsByTagName('*').length;
   const pageSizeEstimateKb = Math.round(new Blob([pageHtml]).size / 1024);
 
@@ -684,8 +693,8 @@ function highlightElement(selector: string) {
     overlay.style.position = 'absolute';
     overlay.style.top = `${rect.top + window.scrollY}px`;
     overlay.style.left = `${rect.left + window.scrollX}px`;
-    overlay.style.width = `${rect.width}px`;
-    overlay.style.height = `${rect.height}px`;
+    overlay.style.width = `${Math.max(rect.width, 24)}px`;
+    overlay.style.height = `${Math.max(rect.height, 24)}px`;
     overlay.style.border = '3px solid #10B981';
     overlay.style.borderRadius = '6px';
     overlay.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.6), inset 0 0 15px rgba(16, 185, 129, 0.2)';

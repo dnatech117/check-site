@@ -11,10 +11,12 @@ export const LinksTable: React.FC<LinksTableProps> = ({ links }) => {
   const [filterType, setFilterType] = useState<'all' | 'internal' | 'external' | 'broken'>('all');
   const [search, setSearch] = useState('');
 
+  const isBroken = (s: number | string | undefined) => s === 'error' || (typeof s === 'number' && s >= 400);
+
   const filtered = links.filter((link) => {
     if (filterType === 'internal' && link.isExternal) return false;
     if (filterType === 'external' && !link.isExternal) return false;
-    if (filterType === 'broken' && link.status !== 404 && link.status !== 'error') return false;
+    if (filterType === 'broken' && !isBroken(link.status)) return false;
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -23,7 +25,7 @@ export const LinksTable: React.FC<LinksTableProps> = ({ links }) => {
     return true;
   });
 
-  const brokenCount = links.filter(l => l.status === 404 || l.status === 'error').length;
+  const brokenCount = links.filter(l => isBroken(l.status)).length;
   const externalCount = links.filter(l => l.isExternal).length;
   const internalCount = links.length - externalCount;
 
@@ -119,9 +121,9 @@ export const LinksTable: React.FC<LinksTableProps> = ({ links }) => {
                       <LinkIcon className="w-2.5 h-2.5" /> Internal
                     </span>
                   )}
-                  {link.status === 404 || link.status === 'error' ? (
+                  {isBroken(link.status) ? (
                     <span className="text-[9.5px] font-mono text-rose-400 bg-rose-500/10 px-1.5 py-0.2 rounded border border-rose-500/20 flex items-center gap-0.5">
-                      <AlertCircle className="w-2.5 h-2.5" /> 404
+                      <AlertCircle className="w-2.5 h-2.5" /> {link.status === 'error' ? 'Error' : link.status}
                     </span>
                   ) : link.status === 200 || link.status === 'ok' ? (
                     <span className="text-[9.5px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20 flex items-center gap-0.5">

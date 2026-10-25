@@ -51,7 +51,13 @@ export const IssueItem: React.FC<IssueItemProps> = ({ issue }) => {
 
   const handleCopyRecommendation = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(`${issue.title}: ${issue.recommendation}`);
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(`${issue.title}: ${issue.recommendation}`).catch(() => {});
+      }
+    } catch {
+      // Ignore clipboard permission issues
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

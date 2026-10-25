@@ -19,6 +19,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [form, setForm] = useState<AuditSettings>(settings);
   const [saved, setSaved] = useState(false);
 
+  React.useEffect(() => {
+    if (isOpen) {
+      setForm(settings);
+    }
+  }, [settings, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSave = () => {

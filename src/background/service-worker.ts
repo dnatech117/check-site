@@ -25,6 +25,8 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 // Update extension icon badge with score
 export function updateBadge(score: number, criticalCount: number) {
+  if (typeof chrome === 'undefined' || !chrome.action) return;
+
   let badgeColor = '#10B981'; // Green
   if (criticalCount > 0 || score < 70) {
     badgeColor = '#EF4444'; // Red
@@ -39,44 +41,61 @@ export function updateBadge(score: number, criticalCount: number) {
 // Background message listener
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   // Check Link Status via background fetch
-  if (message.type === 'CHECK_LINK_STATUS' && message.url) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+  if (message.type === 'CHECK_LINK_STATUS') {
+    const rawUrl = typeof message.url === 'string' ? message.url.trim() : '';
 
-    fetch(message.url, {
+    if (!rawUrl || (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://'))) {
+      sendResponse({
+        url: rawUrl,
+        status: 'error',
+        statusText: 'Invalid or unsupported protocol',
+        ok: false
+      });
+      return false;
+    }
+
+    const headController = new AbortController();
+    const headTimeout = setTimeout(() => headController.abort(), 5000);
+
+    fetch(rawUrl, {
       method: 'HEAD',
-      signal: controller.signal
+      signal: headController.signal
     })
       .then(res => {
-        clearTimeout(timeoutId);
+        clearTimeout(headTimeout);
         sendResponse({
-          url: message.url,
+          url: rawUrl,
           status: res.status,
           statusText: res.statusText,
           ok: res.ok
         });
       })
-      .catch(err => {
-        clearTimeout(timeoutId);
-        // Fallback with GET if HEAD is rejected by server
-        fetch(message.url, {
+      .catch(() => {
+        clearTimeout(headTimeout);
+        // Fallback with fresh controller and GET if HEAD is rejected by server
+        const getController = new AbortController();
+        const getTimeout = setTimeout(() => getController.abort(), 5000);
+
+        fetch(rawUrl, {
           method: 'GET',
-          signal: controller.signal,
+          signal: getController.signal,
           headers: { 'Range': 'bytes=0-100' }
         })
           .then(res => {
+            clearTimeout(getTimeout);
             sendResponse({
-              url: message.url,
+              url: rawUrl,
               status: res.status,
               statusText: res.statusText,
               ok: res.ok
             });
           })
           .catch(fallbackErr => {
+            clearTimeout(getTimeout);
             sendResponse({
-              url: message.url,
+              url: rawUrl,
               status: 'error',
-              statusText: fallbackErr.name === 'AbortError' ? 'Timeout' : 'Network/CORS Error',
+              statusText: fallbackErr?.name === 'AbortError' ? 'Timeout' : 'Network/CORS Error',
               ok: false
             });
           });
@@ -91,7 +110,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     updateBadge(report.score, report.summary.critical);
 
     chrome.storage.local.get(['sitecheck_history'], (result) => {
-      const history: AuditReport[] = result.sitecheck_history || [];
+      const history: AuditReport[] = result?.sitecheck_history || [];
       // Keep last 50 reports
       const updated = [report, ...history.filter(h => h.id !== report.id)].slice(0, 50);
       chrome.storage.local.set({ sitecheck_history: updated }, () => {
