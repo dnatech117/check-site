@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AuditSettings } from '../types/audit';
-import { X, Sliders, RotateCcw, Check } from 'lucide-react';
+import { X, Sliders, RotateCcw, Check, ShieldCheck, ExternalLink } from 'lucide-react';
 import { DEFAULT_SETTINGS } from '../lib/storage';
 
 interface SettingsModalProps {
@@ -139,6 +139,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 />
               </div>
             </div>
+          </div>
+
+          {/* Privacy & Security Guarantee */}
+          <div className="p-2 rounded bg-black/40 border border-white/[0.06] flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-zinc-400">
+              <ShieldCheck className="w-3.5 h-3.5 text-zinc-300" />
+              <span className="text-[10.5px]">Local-First · Zero Tracking</span>
+            </div>
+            <a
+              href="https://github.com/dnatech117/check-site/blob/main/PRIVACY_POLICY.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10.5px] text-zinc-300 hover:text-white flex items-center gap-1 underline underline-offset-2"
+            >
+              <span>Privacy Policy</span>
+              <ExternalLink className="w-2.5 h-2.5" />
+            </a>
           </div>
         </div>
 

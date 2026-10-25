@@ -141,14 +141,18 @@ byd/
 
 ---
 
-## 🔒 Permissions & Privacy
+## 🔒 Permissions, Privacy & Terms
 
 SiteCheck requires only minimal, user-initiated permissions in its `manifest.json`:
 - `activeTab`: To inspect the DOM of only the current page when you open the popup.
 - `scripting`: To inject the audit analyzer and highlighter dynamically into the active tab.
 - `storage`: To persist audit history and custom user thresholds locally on your device in `chrome.storage.local`.
 
-*SiteCheck sends zero tracking telemetry to external servers. All checks run locally on your machine.*
+*SiteCheck sends zero tracking telemetry to external servers. All diagnostics run locally on your machine.*
+
+- **Official Privacy Policy**: [PRIVACY_POLICY.md](file:///c:/Users/DELL/Desktop/byd/PRIVACY_POLICY.md) (or view online at [privacy.html](file:///c:/Users/DELL/Desktop/byd/privacy.html))
+- **Terms of Service**: [TERMS.md](file:///c:/Users/DELL/Desktop/byd/TERMS.md)
 
 ---
 *Created with ❤️ by DNATech*
+
