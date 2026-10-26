@@ -11,6 +11,7 @@ import {
   Search, 
   ArrowUpRight, 
   ArrowDownRight, 
+  ArrowRight,
   RefreshCw,
   Loader2
 } from 'lucide-react';
@@ -38,6 +39,10 @@ export const DashboardApp: React.FC = () => {
   const [selectedSeverity, setSelectedSeverity] = useState<IssueSeverity | 'all'>('all');
   const [selectedCategory, setSelectedCategory] = useState<AuditCategory | 'all'>('all');
 
+  const [inputUrl, setInputUrl] = useState('');
+  const [urlAuditLoading, setUrlAuditLoading] = useState(false);
+  const [auditError, setAuditError] = useState<string | null>(null);
+
   useEffect(() => {
     async function load() {
       const pastHistory = await getAuditHistory();
@@ -54,10 +59,29 @@ export const DashboardApp: React.FC = () => {
     load();
   }, []);
 
+  const handleAuditUrl = async (targetUrlToAudit?: string) => {
+    const url = (targetUrlToAudit || inputUrl).trim();
+    if (!url) return;
+
+    setUrlAuditLoading(true);
+    setAuditError(null);
+    try {
+      const newReport = await requestAudit(undefined, url);
+      setReport(newReport);
+      await saveAuditReport(newReport);
+      const updatedHistory = await getAuditHistory();
+      setHistory(updatedHistory);
+    } catch (err: any) {
+      setAuditError(err?.message || `Failed to audit ${url}`);
+    } finally {
+      setUrlAuditLoading(false);
+    }
+  };
+
   const handleReAudit = async () => {
     setIsLoading(true);
     try {
-      const newReport = await requestAudit();
+      const newReport = await requestAudit(undefined, report?.url);
       setReport(newReport);
       await saveAuditReport(newReport);
       const updatedHistory = await getAuditHistory();
@@ -161,6 +185,71 @@ export const DashboardApp: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* Live Website Auditor Bar */}
+      <div className="bg-[#0E0E12] border-b border-white/[0.08] px-6 py-3.5">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAuditUrl();
+            }}
+            className="flex-1 w-full flex items-center gap-2"
+          >
+            <div className="relative flex-1">
+              <Globe className="w-4 h-4 absolute left-3 top-2.5 text-zinc-500" />
+              <input
+                type="text"
+                placeholder="Enter any live website URL to audit (e.g. https://wordpress.org or yourdomain.com)..."
+                value={inputUrl}
+                onChange={(e) => setInputUrl(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-black border border-white/[0.12] text-white placeholder-zinc-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-mono"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={urlAuditLoading || !inputUrl.trim()}
+              className="px-4 py-2 rounded-lg bg-white text-black font-bold text-xs hover:bg-zinc-200 transition-colors shrink-0 disabled:opacity-40 flex items-center gap-1.5 shadow-sm"
+            >
+              {urlAuditLoading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Auditing...</span>
+                </>
+              ) : (
+                <>
+                  <span>Audit Website</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Quick example chips */}
+          <div className="flex items-center gap-1.5 text-xs text-zinc-400 overflow-x-auto w-full md:w-auto shrink-0">
+            <span className="text-[11px] text-zinc-500">Try live:</span>
+            {['wordpress.org', 'wikipedia.org', 'github.com'].map((example) => (
+              <button
+                key={example}
+                type="button"
+                onClick={() => {
+                  setInputUrl(`https://${example}`);
+                  handleAuditUrl(`https://${example}`);
+                }}
+                className="px-2 py-0.5 rounded bg-zinc-900 border border-white/[0.08] text-[11px] font-mono text-zinc-300 hover:text-white hover:border-white/[0.2] transition-colors"
+              >
+                {example}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {auditError && (
+          <div className="max-w-7xl mx-auto mt-2 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg flex items-center gap-2">
+            <span>⚠️ {auditError}</span>
+          </div>
+        )}
+      </div>
 
       {/* Hero Overview Strip */}
       <section className="border-b border-white/[0.06] bg-gradient-to-b from-[#0A0A0C] to-black py-6 px-6">

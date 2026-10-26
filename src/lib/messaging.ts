@@ -9,9 +9,24 @@ export async function getActiveTab(): Promise<chrome.tabs.Tab | null> {
   return tabs[0] || null;
 }
 
-export async function requestAudit(settings?: Partial<AuditSettings>): Promise<AuditReport> {
-  if (!isExtension) {
-    // Simulated browser development mode
+export async function requestAudit(settings?: Partial<AuditSettings>, targetUrl?: string): Promise<AuditReport> {
+  if (!isExtension || targetUrl) {
+    if (targetUrl) {
+      try {
+        const res = await fetch(`/api/audit?url=${encodeURIComponent(targetUrl)}`);
+        const data = await res.json();
+        if (data?.report) {
+          return data.report;
+        }
+        if (data?.error) {
+          throw new Error(data.error);
+        }
+      } catch (err: any) {
+        throw new Error(err?.message || `Failed to audit ${targetUrl}`);
+      }
+    }
+
+    // Default fallback in web preview
     await new Promise(r => setTimeout(r, 650));
     return {
       ...MOCK_AUDIT_REPORT,
