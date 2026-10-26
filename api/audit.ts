@@ -1,9 +1,18 @@
 type VercelRequest = any;
 type VercelResponse = any;
 
+import {
+  scanForLeakedSecrets,
+  evaluateSecurityHeaders,
+  evaluateWebVitals,
+  evaluateSchemaOrg,
+  evaluateAccessibility,
+  detectTechStack
+} from '../src/lib/hardcoreAudits';
+
 interface AuditIssue {
   id: string;
-  category: 'meta' | 'headings' | 'links' | 'images' | 'wordpress' | 'performance' | 'security';
+  category: 'meta' | 'headings' | 'links' | 'images' | 'wordpress' | 'performance' | 'security' | 'vitals' | 'schema' | 'accessibility' | 'tech';
   severity: 'critical' | 'warning' | 'notice' | 'good';
   title: string;
   description: string;
@@ -55,6 +64,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const isHttps = parsedUrl.protocol === 'https:';
     const html = await response.text();
     const pageSizeEstimateKb = Math.round(new Blob([html]).size / 1024);
+
+    const headerMap: Record<string, string | null> = {
+      'content-security-policy': response.headers.get('content-security-policy'),
+      'strict-transport-security': response.headers.get('strict-transport-security'),
+      'x-frame-options': response.headers.get('x-frame-options'),
+      'x-content-type-options': response.headers.get('x-content-type-options'),
+      'referrer-policy': response.headers.get('referrer-policy'),
+      'permissions-policy': response.headers.get('permissions-policy'),
+      'server': response.headers.get('server'),
+      'cf-ray': response.headers.get('cf-ray'),
+      'x-vercel-id': response.headers.get('x-vercel-id'),
+      'x-amz-cf-id': response.headers.get('x-amz-cf-id'),
+      'x-fastly-request-id': response.headers.get('x-fastly-request-id'),
+    };
 
     const issues: AuditIssue[] = [];
 
@@ -413,7 +436,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // 9. HTTPS
+    // 9. HTTPS & Leaked Secrets & Security Headers
+    const leakedSecrets = scanForLeakedSecrets(html);
+    for (const secret of leakedSecrets) {
+      issues.push({
+        id: `secret-${secret.id}`,
+        category: 'security',
+        severity: 'critical',
+        title: `Critical Leaked Secret: ${secret.type}`,
+        description: `Detected hardcoded credentials in page source (${secret.preview}). Exposes cloud infrastructure or services.`,
+        recommendation: 'Immediately revoke and rotate this key, move credentials to backend environment variables.',
+        context: `Type: ${secret.type} | Masked: ${secret.preview}`,
+        scoreImpact: 15,
+      });
+    }
+
     if (!isHttps) {
       issues.push({
         id: 'insecure-http',
@@ -435,6 +472,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         scoreImpact: 0,
       });
     }
+
+    const { headers: securityHeaderChecks, issues: secHeaderIssues } = evaluateSecurityHeaders(headerMap, html);
+    issues.push(...secHeaderIssues);
+
+    const unsafeBlankLinksCount = (html.match(/<a[^>]+target=["']_blank["'](?![^>]*rel=["'][^"']*noopener)/gi) || []).length;
+    const mixedContentCount = (html.match(/<(?:img|script|link)[^>]+(?:src|href)=["']http:\/\//gi) || []).length;
+
+    const securityDetails = {
+      isHttps,
+      mixedContentCount,
+      headers: securityHeaderChecks,
+      leakedSecrets,
+      sensitivePathsFound: [],
+      unsafeBlankLinksCount,
+    };
+
+    // 10. Web Vitals
+    const { vitals: vitalsDetails, issues: vitalsIssues } = evaluateWebVitals(null, html);
+    issues.push(...vitalsIssues);
+
+    // 11. Schema.org / JSON-LD
+    const { schema: schemaDetails, issues: schemaIssues } = evaluateSchemaOrg(null, html);
+    issues.push(...schemaIssues);
+
+    // 12. Accessibility
+    const { accessibility: accessibilityDetails, issues: a11yIssues } = evaluateAccessibility(null, html);
+    issues.push(...a11yIssues);
+
+    // 13. Tech Stack
+    const techStackDetails = detectTechStack(null, html, headerMap);
 
     // Overall Score
     const totalDeductions = issues.reduce((acc, i) => acc + i.scoreImpact, 0);
@@ -487,6 +554,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         domNodesCount: (html.match(/<[a-z0-9]+/gi) || []).length,
         pageSizeEstimateKb,
       },
+      security: securityDetails,
+      vitals: vitalsDetails,
+      schema: schemaDetails,
+      accessibility: accessibilityDetails,
+      techStack: techStackDetails
     };
 
     return res.status(200).json({ success: true, report });

@@ -13,7 +13,11 @@ import {
   ArrowDownRight, 
   ArrowRight,
   RefreshCw,
-  Loader2
+  Loader2,
+  Shield,
+  Zap,
+  Eye,
+  Cpu
 } from 'lucide-react';
 
 import { AuditReport, IssueSeverity, AuditCategory } from '../types/audit';
@@ -29,12 +33,19 @@ import { LinksTable } from '../components/LinksTable';
 import { ImagesInspector } from '../components/ImagesInspector';
 import { WordPressPanel } from '../components/WordPressPanel';
 import { MetaInspector } from '../components/MetaInspector';
+import { SecurityPanel } from '../components/SecurityPanel';
+import { WebVitalsPanel } from '../components/WebVitalsPanel';
+import { SchemaValidatorPanel } from '../components/SchemaValidatorPanel';
+import { AccessibilityPanel } from '../components/AccessibilityPanel';
+import { TechStackPanel } from '../components/TechStackPanel';
+
+type DashboardTab = 'issues' | 'security' | 'vitals' | 'schema' | 'a11y' | 'tech' | 'meta' | 'headings' | 'links' | 'images' | 'wordpress' | 'history';
 
 export const DashboardApp: React.FC = () => {
   const [report, setReport] = useState<AuditReport | null>(null);
   const [history, setHistory] = useState<AuditReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'issues' | 'meta' | 'headings' | 'links' | 'images' | 'wordpress' | 'history'>('issues');
+  const [activeTab, setActiveTab] = useState<DashboardTab>('issues');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSeverity, setSelectedSeverity] = useState<IssueSeverity | 'all'>('all');
   const [selectedCategory, setSelectedCategory] = useState<AuditCategory | 'all'>('all');
@@ -349,6 +360,79 @@ export const DashboardApp: React.FC = () => {
 
           <button
             type="button"
+            onClick={() => setActiveTab('security')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 relative ${
+              activeTab === 'security'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>Security</span>
+            {report.security?.leakedSecrets && report.security.leakedSecrets.length > 0 && (
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute -top-0.5 -right-0.5" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('vitals')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
+              activeTab === 'vitals'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>Core Web Vitals</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('schema')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
+              activeTab === 'schema'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <FileCode className="w-3.5 h-3.5" />
+            <span>Schema.org</span>
+            {report.schema && (
+              <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-black/40 text-zinc-300">
+                {report.schema.totalSchemas}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('a11y')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
+              activeTab === 'a11y'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>WCAG A11y</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('tech')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
+              activeTab === 'tech'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Cpu className="w-3.5 h-3.5" />
+            <span>Tech Stack</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('meta')}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
               activeTab === 'meta'
@@ -504,6 +588,36 @@ export const DashboardApp: React.FC = () => {
         {activeTab === 'meta' && (
           <div className="max-w-4xl mx-auto">
             <MetaInspector meta={report.meta} />
+          </div>
+        )}
+
+        {activeTab === 'security' && (
+          <div className="max-w-4xl mx-auto">
+            <SecurityPanel security={report.security} />
+          </div>
+        )}
+
+        {activeTab === 'vitals' && (
+          <div className="max-w-4xl mx-auto">
+            <WebVitalsPanel vitals={report.vitals} />
+          </div>
+        )}
+
+        {activeTab === 'schema' && (
+          <div className="max-w-4xl mx-auto">
+            <SchemaValidatorPanel schema={report.schema} />
+          </div>
+        )}
+
+        {activeTab === 'a11y' && (
+          <div className="max-w-4xl mx-auto">
+            <AccessibilityPanel accessibility={report.accessibility} />
+          </div>
+        )}
+
+        {activeTab === 'tech' && (
+          <div className="max-w-4xl mx-auto">
+            <TechStackPanel techStack={report.techStack} />
           </div>
         )}
 

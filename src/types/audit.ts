@@ -5,7 +5,11 @@ export type AuditCategory =
   | 'links' 
   | 'wordpress' 
   | 'security' 
-  | 'performance';
+  | 'performance'
+  | 'vitals'
+  | 'schema'
+  | 'accessibility'
+  | 'tech';
 
 export type IssueSeverity = 'critical' | 'warning' | 'notice' | 'good';
 
@@ -97,6 +101,119 @@ export interface PerformanceMetrics {
   pageSizeEstimateKb: number;
 }
 
+export interface SecurityHeaderCheck {
+  name: string;
+  value?: string | null;
+  status: 'enforced' | 'missing' | 'weak';
+  details: string;
+}
+
+export interface LeakedSecretItem {
+  id: string;
+  type: string;
+  preview: string;
+  location: string;
+  severity: 'critical' | 'warning';
+}
+
+export interface SecurityDetails {
+  isHttps: boolean;
+  mixedContentCount: number;
+  headers: SecurityHeaderCheck[];
+  leakedSecrets: LeakedSecretItem[];
+  sensitivePathsFound: string[];
+  unsafeBlankLinksCount: number;
+}
+
+export interface LcpDiagnostic {
+  candidateSelector?: string;
+  candidateTag?: string;
+  candidateSrc?: string;
+  hasLazyLoading: boolean;
+  hasFetchPriorityHigh: boolean;
+  isModernFormat: boolean;
+}
+
+export interface ClsRiskItem {
+  selector: string;
+  tag: string;
+  src?: string;
+  reason: string;
+}
+
+export interface WebVitalsDetails {
+  lcp: LcpDiagnostic;
+  clsRisks: ClsRiskItem[];
+  renderBlockingScripts: number;
+  renderBlockingStylesheets: number;
+  missingPreconnects: string[];
+}
+
+export interface SchemaItem {
+  id: string;
+  type: string;
+  context: string;
+  rawJson: string;
+  isValidJson: boolean;
+  errors: string[];
+  warnings: string[];
+  propertiesCount: number;
+}
+
+export interface SchemaDetails {
+  totalSchemas: number;
+  validCount: number;
+  invalidCount: number;
+  items: SchemaItem[];
+}
+
+export interface ContrastIssueItem {
+  selector: string;
+  text: string;
+  textColor: string;
+  backgroundColor: string;
+  contrastRatio: number;
+  requiredRatio: number;
+  isLargeText: boolean;
+  passesAA: boolean;
+}
+
+export interface TouchTargetIssueItem {
+  selector: string;
+  tag: string;
+  text: string;
+  width: number;
+  height: number;
+}
+
+export interface FormAccessibilityItem {
+  selector: string;
+  tag: string;
+  type?: string;
+  missingLabel: boolean;
+}
+
+export interface AccessibilityDetails {
+  htmlLang: string | null;
+  isLangValid: boolean;
+  contrastIssues: ContrastIssueItem[];
+  touchTargetIssues: TouchTargetIssueItem[];
+  formIssues: FormAccessibilityItem[];
+  hasSkipLink: boolean;
+  hasViewportZoomDisabled: boolean;
+}
+
+export interface TechStackItem {
+  name: string;
+  category: 'Framework' | 'CMS' | 'CDN' | 'Analytics' | 'Library' | 'Hosting';
+  version?: string;
+  confidence: 'high' | 'medium';
+}
+
+export interface TechStackDetails {
+  items: TechStackItem[];
+}
+
 export interface AuditSummary {
   total: number;
   critical: number;
@@ -119,6 +236,11 @@ export interface AuditReport {
   links: LinkItem[];
   wordpress: WordPressDetails;
   performance: PerformanceMetrics;
+  security?: SecurityDetails;
+  vitals?: WebVitalsDetails;
+  schema?: SchemaDetails;
+  accessibility?: AccessibilityDetails;
+  techStack?: TechStackDetails;
 }
 
 export interface AuditSettings {

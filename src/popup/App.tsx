@@ -7,7 +7,12 @@ import {
   Globe, 
   FileText,
   Search,
-  Loader2
+  Loader2,
+  Shield,
+  Zap,
+  FileCode,
+  Eye,
+  Cpu
 } from 'lucide-react';
 
 import { AuditReport, AuditSettings, IssueSeverity, AuditCategory } from '../types/audit';
@@ -31,10 +36,15 @@ import { LinksTable } from '../components/LinksTable';
 import { ImagesInspector } from '../components/ImagesInspector';
 import { WordPressPanel } from '../components/WordPressPanel';
 import { MetaInspector } from '../components/MetaInspector';
+import { SecurityPanel } from '../components/SecurityPanel';
+import { WebVitalsPanel } from '../components/WebVitalsPanel';
+import { SchemaValidatorPanel } from '../components/SchemaValidatorPanel';
+import { AccessibilityPanel } from '../components/AccessibilityPanel';
+import { TechStackPanel } from '../components/TechStackPanel';
 import { AuditHistoryModal } from '../components/AuditHistoryModal';
 import { SettingsModal } from '../components/SettingsModal';
 
-type ActiveTab = 'overview' | 'issues' | 'meta' | 'headings' | 'links' | 'images' | 'wordpress';
+type ActiveTab = 'overview' | 'issues' | 'security' | 'vitals' | 'schema' | 'a11y' | 'tech' | 'meta' | 'headings' | 'links' | 'images' | 'wordpress';
 
 export const App: React.FC = () => {
   const [report, setReport] = useState<AuditReport | null>(null);
@@ -214,6 +224,74 @@ export const App: React.FC = () => {
 
                 <button
                   type="button"
+                  onClick={() => setActiveTab('security')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all flex items-center gap-1 relative ${
+                    activeTab === 'security'
+                      ? 'bg-white text-black shadow-sm'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <Shield className="w-3 h-3" />
+                  <span>Security</span>
+                  {report.security?.leakedSecrets && report.security.leakedSecrets.length > 0 && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping absolute top-1 right-1" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('vitals')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all flex items-center gap-1 ${
+                    activeTab === 'vitals'
+                      ? 'bg-white text-black shadow-sm'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <Zap className="w-3 h-3" />
+                  <span>Vitals</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('schema')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all flex items-center gap-1 ${
+                    activeTab === 'schema'
+                      ? 'bg-white text-black shadow-sm'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <FileCode className="w-3 h-3" />
+                  <span>Schema</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('a11y')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all flex items-center gap-1 ${
+                    activeTab === 'a11y'
+                      ? 'bg-white text-black shadow-sm'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <Eye className="w-3 h-3" />
+                  <span>A11y</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('tech')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all flex items-center gap-1 ${
+                    activeTab === 'tech'
+                      ? 'bg-white text-black shadow-sm'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <Cpu className="w-3 h-3" />
+                  <span>Tech</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setActiveTab('meta')}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all flex items-center gap-1 ${
                     activeTab === 'meta'
@@ -349,6 +427,70 @@ export const App: React.FC = () => {
                       </span>
                     </div>
                   </div>
+
+                  {/* Hardcore Diagnostics Quick Strip */}
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-semibold text-zinc-300 px-0.5 block">
+                      Hardcore Diagnostics
+                    </span>
+                    <div className="grid grid-cols-4 gap-1.5 text-[10px]">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('security')}
+                        className="p-2 rounded-xl bg-[#0F0F12] border border-white/[0.08] hover:border-white/20 transition-all text-left group"
+                      >
+                        <div className="flex items-center gap-1">
+                          <Shield className="w-3 h-3 text-emerald-400 group-hover:scale-110 transition-transform" />
+                          <span className="font-semibold text-zinc-200">Security</span>
+                        </div>
+                        <span className="text-[9px] font-mono text-zinc-400 block truncate mt-1">
+                          {report.security?.leakedSecrets?.length ? `${report.security.leakedSecrets.length} LEAKS!` : 'Headers OK'}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('vitals')}
+                        className="p-2 rounded-xl bg-[#0F0F12] border border-white/[0.08] hover:border-white/20 transition-all text-left group"
+                      >
+                        <div className="flex items-center gap-1">
+                          <Zap className="w-3 h-3 text-amber-400 group-hover:scale-110 transition-transform" />
+                          <span className="font-semibold text-zinc-200">Vitals</span>
+                        </div>
+                        <span className="text-[9px] font-mono text-zinc-400 block truncate mt-1">
+                          {report.vitals?.lcp.hasLazyLoading ? 'LCP Risk' : 'CLS & LCP'}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('schema')}
+                        className="p-2 rounded-xl bg-[#0F0F12] border border-white/[0.08] hover:border-white/20 transition-all text-left group"
+                      >
+                        <div className="flex items-center gap-1">
+                          <FileCode className="w-3 h-3 text-indigo-400 group-hover:scale-110 transition-transform" />
+                          <span className="font-semibold text-zinc-200">Schema</span>
+                        </div>
+                        <span className="text-[9px] font-mono text-zinc-400 block truncate mt-1">
+                          {report.schema?.totalSchemas ? `${report.schema.totalSchemas} JSON-LD` : '0 Schemas'}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('a11y')}
+                        className="p-2 rounded-xl bg-[#0F0F12] border border-white/[0.08] hover:border-white/20 transition-all text-left group"
+                      >
+                        <div className="flex items-center gap-1">
+                          <Eye className="w-3 h-3 text-sky-400 group-hover:scale-110 transition-transform" />
+                          <span className="font-semibold text-zinc-200">WCAG</span>
+                        </div>
+                        <span className="text-[9px] font-mono text-zinc-400 block truncate mt-1">
+                          {report.accessibility?.contrastIssues?.length ? `${report.accessibility.contrastIssues.length} Fails` : 'Compliant'}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -429,6 +571,26 @@ export const App: React.FC = () => {
                     )}
                   </div>
                 </div>
+              )}
+
+              {activeTab === 'security' && (
+                <SecurityPanel security={report.security} />
+              )}
+
+              {activeTab === 'vitals' && (
+                <WebVitalsPanel vitals={report.vitals} />
+              )}
+
+              {activeTab === 'schema' && (
+                <SchemaValidatorPanel schema={report.schema} />
+              )}
+
+              {activeTab === 'a11y' && (
+                <AccessibilityPanel accessibility={report.accessibility} />
+              )}
+
+              {activeTab === 'tech' && (
+                <TechStackPanel techStack={report.techStack} />
               )}
 
               {activeTab === 'meta' && <MetaInspector meta={report.meta} />}

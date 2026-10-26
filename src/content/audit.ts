@@ -7,9 +7,18 @@ import {
   LinkItem, 
   WordPressDetails, 
   PerformanceMetrics,
+  SecurityDetails,
   AuditSettings,
   ExtensionMessage 
 } from '../types/audit';
+import {
+  scanForLeakedSecrets,
+  evaluateSecurityHeaders,
+  evaluateWebVitals,
+  evaluateSchemaOrg,
+  evaluateAccessibility,
+  detectTechStack
+} from '../lib/hardcoreAudits';
 
 function generateSelector(el: Element): string {
   if (el.id) return `#${CSS.escape(el.id)}`;
@@ -560,8 +569,27 @@ export function performSiteAudit(customSettings?: Partial<AuditSettings>): Audit
     });
   }
 
-  // 6. Security (HTTPS & Mixed Content)
+  // 6. Security (HTTPS, Headers, Mixed Content, Secrets)
   const isHttps = window.location.protocol === 'https:';
+  const leakedSecrets = scanForLeakedSecrets(pageHtml);
+  
+  // Create critical issues for any leaked API keys or secrets
+  for (const secret of leakedSecrets) {
+    issues.push({
+      id: `secret-${secret.id}`,
+      category: 'security',
+      severity: 'critical',
+      title: `Critical Leaked Secret: ${secret.type}`,
+      description: `Detected hardcoded credentials in client source code (${secret.preview}). Exposes cloud infrastructure or services to unauthorized access.`,
+      recommendation: 'Immediately revoke and rotate this key, move credentials to secure environment variables (.env), and proxy requests through a backend.',
+      context: `Type: ${secret.type} | Masked: ${secret.preview}`,
+      scoreImpact: 15
+    });
+  }
+
+  const insecureResources = Array.from(document.querySelectorAll('img[src^="http:"], script[src^="http:"], link[href^="http:"]'));
+  const mixedContentCount = insecureResources.length;
+
   if (!isHttps) {
     issues.push({
       id: 'insecure-http',
@@ -572,33 +600,59 @@ export function performSiteAudit(customSettings?: Partial<AuditSettings>): Audit
       recommendation: 'Install an SSL certificate and configure 301 redirects to HTTPS.',
       scoreImpact: 20
     });
+  } else if (mixedContentCount > 0) {
+    issues.push({
+      id: 'mixed-content',
+      category: 'security',
+      severity: 'critical',
+      title: `${mixedContentCount} Mixed Content Resources Found`,
+      description: 'Page is HTTPS, but requests insecure HTTP assets (images, stylesheets, or scripts).',
+      recommendation: 'Update all asset URLs to use https:// or protocol-relative paths.',
+      scoreImpact: 10
+    });
   } else {
-    // Check for mixed content
-    const insecureResources = Array.from(document.querySelectorAll('img[src^="http:"], script[src^="http:"], link[href^="http:"]'));
-    if (insecureResources.length > 0) {
-      issues.push({
-        id: 'mixed-content',
-        category: 'security',
-        severity: 'critical',
-        title: `${insecureResources.length} Mixed Content Resources Found`,
-        description: 'Page is HTTPS, but requests insecure HTTP assets (images, stylesheets, or scripts).',
-        recommendation: 'Update all asset URLs to use https:// or protocol-relative paths.',
-        scoreImpact: 10
-      });
-    } else {
-      issues.push({
-        id: 'secure-https',
-        category: 'security',
-        severity: 'good',
-        title: 'Secure HTTPS Encryption Active',
-        description: 'Page is encrypted via SSL/TLS and no mixed-content elements were detected.',
-        recommendation: 'Ensure HSTS headers are enabled for maximum transport security.',
-        scoreImpact: 0
-      });
-    }
+    issues.push({
+      id: 'secure-https',
+      category: 'security',
+      severity: 'good',
+      title: 'Secure HTTPS Encryption Active',
+      description: 'Page is encrypted via SSL/TLS and no mixed-content elements were detected.',
+      recommendation: 'Ensure HSTS headers are enabled for maximum transport security.',
+      scoreImpact: 0
+    });
   }
 
-  // 7. Performance & DOM Metrics
+  // Evaluate security headers (CSP, HSTS, X-Frame-Options, etc.)
+  const { headers: securityHeaderChecks, issues: secHeaderIssues } = evaluateSecurityHeaders({}, pageHtml);
+  issues.push(...secHeaderIssues);
+
+  const unsafeBlankLinksCount = document.querySelectorAll('a[target="_blank"]:not([rel*="noopener"])').length;
+
+  const securityDetails: SecurityDetails = {
+    isHttps,
+    mixedContentCount,
+    headers: securityHeaderChecks,
+    leakedSecrets,
+    sensitivePathsFound: [],
+    unsafeBlankLinksCount,
+  };
+
+  // 7. Core Web Vitals & Modern Asset Performance
+  const { vitals: vitalsDetails, issues: vitalsIssues } = evaluateWebVitals(document, pageHtml);
+  issues.push(...vitalsIssues);
+
+  // 8. Schema.org / JSON-LD Structured Data
+  const { schema: schemaDetails, issues: schemaIssues } = evaluateSchemaOrg(document, pageHtml);
+  issues.push(...schemaIssues);
+
+  // 9. WCAG 2.2 Accessibility & Contrast Audit
+  const { accessibility: accessibilityDetails, issues: a11yIssues } = evaluateAccessibility(document, pageHtml);
+  issues.push(...a11yIssues);
+
+  // 10. Technology Stack Detective
+  const techStackDetails = detectTechStack(document, pageHtml);
+
+  // 11. Performance & DOM Metrics
   const navTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
   const loadTimeMs = navTiming && navTiming.loadEventEnd > 0 
     ? Math.max(0, Math.round(navTiming.loadEventEnd - navTiming.startTime)) 
@@ -671,7 +725,12 @@ export function performSiteAudit(customSettings?: Partial<AuditSettings>): Audit
     images,
     links,
     wordpress: wordpressDetails,
-    performance: performanceMetrics
+    performance: performanceMetrics,
+    security: securityDetails,
+    vitals: vitalsDetails,
+    schema: schemaDetails,
+    accessibility: accessibilityDetails,
+    techStack: techStackDetails
   };
 }
 
