@@ -35,3 +35,6 @@ pnpm-debug.log*
 
 # TypeScript Build Info
 *.tsbuildinfo
+
+# Extension packages
+*.zip
