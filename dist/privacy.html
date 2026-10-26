@@ -31,6 +31,27 @@
         margin: 0 auto;
         padding: 48px 24px 80px;
       }
+      .nav-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 20px;
+        margin-bottom: 28px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 16px;
+      }
+      .nav-links a {
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .nav-links a:hover {
+        color: var(--accent);
+      }
       header {
         display: flex;
         align-items: center;
@@ -138,14 +159,14 @@
   </head>
   <body>
     <div class="container">
-      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; margin-bottom: 28px; border-bottom: 1px solid var(--border); font-size: 13px;">
-        <div style="display: flex; gap: 16px;">
-          <a href="/" style="color: var(--muted); text-decoration: none;">← Back to Home</a>
-          <a href="/dashboard.html" style="color: var(--muted); text-decoration: none;">Live Dashboard</a>
-          <a href="/terms.html" style="color: var(--muted); text-decoration: none;">Terms of Service</a>
+      <div class="nav-bar">
+        <div class="nav-links">
+          <a href="/">← Back to Home</a>
+          <a href="/dashboard.html">Live Dashboard</a>
+          <a href="/terms.html">Terms of Service</a>
         </div>
-        <div>
-          <a href="https://github.com/dnatech117/check-site" target="_blank" rel="noopener noreferrer" style="color: var(--muted); text-decoration: none;">GitHub</a>
+        <div class="nav-links">
+          <a href="https://github.com/dnatech117/check-site" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
       </div>
 
